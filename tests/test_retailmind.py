@@ -103,7 +103,7 @@ class TestAgentKnowledgeRepo:
         content = "Test retail intelligence report content."
         query   = "test retail trends"
 
-        filepath = save_to_knowledge_repo(content, query)
+        filepath = save_to_knowledge_repo(content, query,model_used="test-model")
 
         assert filepath.exists()
         text = filepath.read_text(encoding="utf-8")
@@ -120,7 +120,7 @@ class TestAgentKnowledgeRepo:
 
     def test_save_sanitises_query_in_filename(self):
         from agent_service.retail_agent import save_to_knowledge_repo
-        filepath = save_to_knowledge_repo("content", "Query with SPACES & symbols!")
+        filepath = save_to_knowledge_repo("content", "Query with SPACES & symbols!",model_used="test-model")
         assert " " not in filepath.name
         assert "&" not in filepath.name
         filepath.unlink()
@@ -130,7 +130,7 @@ class TestAgentKnowledgeRepo:
         """DuckDuckGo tool should append 'retail industry' if not present."""
         mock_ddg.run.return_value = "Sample search results about e-commerce trends."
         from agent_service.retail_agent import search_tool
-        result = search_tool("e-commerce trends 2024")
+        result = search_tool.run("e-commerce trends 2024")
         # Should have called with retail context appended
         call_arg = mock_ddg.run.call_args[0][0]
         assert "retail" in call_arg.lower()
@@ -141,7 +141,7 @@ class TestAgentKnowledgeRepo:
         """DuckDuckGo tool should return error string on failure, not raise."""
         mock_ddg.run.side_effect = Exception("Rate limited")
         from agent_service.retail_agent import search_tool
-        result = search_tool("some query")
+        result = search_tool.run("some query")
         assert "Search failed" in result or isinstance(result, str)
 
 

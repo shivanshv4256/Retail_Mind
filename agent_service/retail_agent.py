@@ -84,9 +84,10 @@ def search_tool(query: str) -> str:
     except Exception as e:
         logger.warning(f"DuckDuckGo search error: {e}. Retrying without modifier...")
         try:
-            return _ddg_run.run(query)
+            retry_results = _ddg_run.run(query)
+            return retry_results[:4000] if retry_results else "No results found."
         except Exception :
-            return results[:4000] if results else "Search failed."
+            return  "Search failed."
 
 
 # ──────────────────────────────────────────────
