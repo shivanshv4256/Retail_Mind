@@ -7,8 +7,6 @@ Uses mocking for Gemini, Groq, ChromaDB, and Tavily.
 
 import pytest
 from unittest.mock import MagicMock, patch
-from pathlib import Path
-import tempfile, os
 
 
 # ─────────────────────────────────────────────────────
@@ -101,7 +99,7 @@ class TestDocumentIngester:
 class TestAgentKnowledgeRepo:
 
     def test_save_to_knowledge_repo_creates_file(self):
-        from agent_service.retail_agent import save_to_knowledge_repo, KNOWLEDGE_DIR
+        from agent_service.retail_agent import save_to_knowledge_repo
         content = "Test retail intelligence report content."
         query   = "test retail trends"
 

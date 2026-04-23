@@ -159,7 +159,7 @@ def build_analysis_task(agent: Agent, research_task: Task) -> Task:
         ),
         expected_output=(
             "Competitive analysis and Pricing insights"
-            
+
         ),
         agent=agent,
         context=[research_task],   # receives researcher output as context
@@ -167,7 +167,7 @@ def build_analysis_task(agent: Agent, research_task: Task) -> Task:
 
 
 def build_writing_task(agent: Agent, analysis_task: Task, ) -> Task:
-    
+
     return Task(
         description=(
            """ Generate final report including:
@@ -202,7 +202,7 @@ def save_to_knowledge_repo(content: str, query: str, model_used: str) -> Path:
         f"Query     : {query}\n"
         f"Generated : {datetime.utcnow().isoformat()} UTC\n"
         # Use the passed variable here:
-        f"Model     : Groq / {model_used}\n" 
+        f"Model     : Groq / {model_used}\n"
         f"{'='*50}\n\n"
     )
 
@@ -229,7 +229,7 @@ def run_retail_research_agent(query: str) -> dict:
     """
     logger.info(f"Starting RetailMind agent for query: '{query}'")
 
-    
+
 
     # Build agents
     researcher = build_researcher_agent()

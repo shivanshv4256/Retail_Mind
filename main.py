@@ -9,7 +9,6 @@ Exposes unified REST endpoints for:
   GET  /api/health          → Health check
 """
 
-import os
 import logging
 from pathlib import Path
 
@@ -35,7 +34,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
