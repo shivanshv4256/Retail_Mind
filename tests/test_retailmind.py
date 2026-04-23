@@ -185,7 +185,7 @@ class TestAPIEndpoints:
 
         # Put the comment above the decorator
 @patch("agent_service.retail_agent._ddg_run")
-def test_search_tool(self, mock_ddg):
+def test_search_tool( mock_ddg):
     """Triggers the final fallback 'Search failed' to boost coverage."""
     # Force both the first try AND the retry to fail
     mock_ddg.run.side_effect = Exception("Connection Error")
