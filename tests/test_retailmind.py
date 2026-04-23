@@ -184,14 +184,37 @@ class TestAPIEndpoints:
         assert "reports" in resp.json()
 
         # Put the comment above the decorator
+
 @patch("agent_service.retail_agent._ddg_run")
-def test_search_tool( mock_ddg):
+def test_search_tool(mock_ddg):
     """Triggers the final fallback 'Search failed' to boost coverage."""
-    # Force both the first try AND the retry to fail
+
+    # Force both the first try AND the retry to fail by making _ddg_run raise an exception
     mock_ddg.run.side_effect = Exception("Connection Error")
 
+    # Import search_tool after patching
     from agent_service.retail_agent import search_tool
+
+    # Call the search_tool with an "unlikely query"
     result = search_tool("unlikely query")
 
+    # Assert that the fallback error message is returned
     assert result == "Search failed."
-    assert mock_ddg.run.called
+
+    # Now, let's test the case where the first call fails but the retry succeeds
+    mock_ddg.reset_mock()  # Reset mock to simulate the retry
+    mock_ddg.run.side_effect = [Exception("Connection Error"), "Successful retry result"]
+
+    result_retry = search_tool("unlikely query")
+
+    # Assert that the result from the retry is returned
+    assert result_retry == "Successful retry result"[:4000]
+
+    # Finally, let's simulate successful results right away
+    mock_ddg.reset_mock()  # Reset mock again to simulate no errors
+    mock_ddg.run.return_value = "Some search results"
+
+    result_success = search_tool("unlikely query")
+
+    # Assert that the successful results are returned
+    assert result_success == "Some search results"[:4000]
