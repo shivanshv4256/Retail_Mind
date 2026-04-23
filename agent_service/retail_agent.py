@@ -88,7 +88,7 @@ def search_tool(query: str) -> str:
             return retry_results[:4000] if retry_results else "No results found."
         except Exception :
             return  "Search failed."
-        
+
 
 # ──────────────────────────────────────────────
 # Agent Definitions
