@@ -16,6 +16,7 @@ from datetime import datetime
 from pathlib import Path
 
 from crewai import Agent, Task, Crew, Process, LLM
+from crewai.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
 
@@ -59,7 +60,7 @@ _ddg_wrapper = DuckDuckGoSearchAPIWrapper(
 _ddg_run = DuckDuckGoSearchRun(api_wrapper=_ddg_wrapper)
 
 
-
+@tool("DuckDuckGo Retail Search")
 def search_tool(query: str) -> str:
     """
     Search the web using DuckDuckGo for retail market intelligence.
@@ -72,21 +73,26 @@ def search_tool(query: str) -> str:
     Returns:
         String of search results from DuckDuckGo.
     """
-    # Append retail context if not already present to bias towards relevant sources
+    # Append 'retail' context if not already present to bias towards relevant sources
     retail_query = query if "retail" in query.lower() else f"{query} retail industry"
     logger.info(f"DuckDuckGo search: '{retail_query}'")
+
     try:
         results = _ddg_run.run(retail_query)
-        if not  results:
-            "No results found for this query."
-        return results[:4000 ]
+        if not results:
+            return "No results found for this query."
+        return results[:4000]
+
     except Exception as e:
         logger.warning(f"DuckDuckGo search error: {e}. Retrying without modifier...")
         try:
             retry_results = _ddg_run.run(query)
-            return retry_results[:4000] if retry_results else "No results found."
-        except Exception :
-            return  "Search failed."
+            if not retry_results:
+                return "No results found."
+            return retry_results[:4000]
+        except Exception as e:
+            logger.error(f"Retry failed: {e}")
+            return "Search failed."
 
 
 # ──────────────────────────────────────────────
