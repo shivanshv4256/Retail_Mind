@@ -8,12 +8,13 @@ pydantic==2.7.4
 # --- AGENT ORCHESTRATION (CrewAI) ---
 crewai==0.51.0
 langchain-groq==0.1.6
-langchain-community==0.4.1
+langchain==0.2.12
+langchain-community==0.2.11
 duckduckgo-search==6.2.6
 
 # --- RAG & DOCUMENT PROCESSING ---
 pypdf==6.10.2
-langchain-text-splitters==1.1.2
+langchain-text-splitters
 chromadb==0.5.3
 
 # --- LOCAL EMBEDDINGS (CPU Optimized) ---
