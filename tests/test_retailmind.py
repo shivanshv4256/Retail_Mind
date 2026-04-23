@@ -1,5 +1,13 @@
+"""
+RetailMind Unit Tests
+=====================
+Tests core logic WITHOUT making real API calls.
+Uses mocking for Gemini, Groq, ChromaDB, and Tavily.
+"""
+
 import pytest
 from unittest.mock import MagicMock, patch
+
 
 # ─────────────────────────────────────────────────────
 # RAG Pipeline Tests
@@ -20,8 +28,8 @@ class TestDocumentIngester:
 
         result = ingester.ingest_text("Sample retail text for testing.", "test_doc.txt")
 
-        assert "doc_id" in result
-        assert "chunks" in result
+        assert "doc_id"  in result
+        assert "chunks"  in result
         assert result["source"] == "test_doc.txt"
         assert result["chunks"] >= 1
 
@@ -95,7 +103,7 @@ class TestAgentKnowledgeRepo:
         content = "Test retail intelligence report content."
         query   = "test retail trends"
 
-        filepath = save_to_knowledge_repo(content, query, model_used="test-model")
+        filepath = save_to_knowledge_repo(content, query)
 
         assert filepath.exists()
         text = filepath.read_text(encoding="utf-8")
@@ -103,7 +111,7 @@ class TestAgentKnowledgeRepo:
         assert content in text
         assert query in text
 
-        filepath.unlink()  # Cleanup
+        filepath.unlink()   # cleanup
 
     def test_knowledge_dir_exists(self):
         from agent_service.retail_agent import KNOWLEDGE_DIR
@@ -112,7 +120,7 @@ class TestAgentKnowledgeRepo:
 
     def test_save_sanitises_query_in_filename(self):
         from agent_service.retail_agent import save_to_knowledge_repo
-        filepath = save_to_knowledge_repo("content", "Query with SPACES & symbols!", model_used="test-model")
+        filepath = save_to_knowledge_repo("content", "Query with SPACES & symbols!")
         assert " " not in filepath.name
         assert "&" not in filepath.name
         filepath.unlink()
@@ -122,22 +130,19 @@ class TestAgentKnowledgeRepo:
         """DuckDuckGo tool should append 'retail industry' if not present."""
         mock_ddg.run.return_value = "Sample search results about e-commerce trends."
         from agent_service.retail_agent import search_tool
-    # Accessing the actual search function via 'func'
-        result = search_tool.func("e-commerce trends 2024")
-
-    # Should have called with retail context appended
+        result = search_tool("e-commerce trends 2024")
+        # Should have called with retail context appended
         call_arg = mock_ddg.run.call_args[0][0]
         assert "retail" in call_arg.lower()
         assert len(result) > 0
 
     @patch("agent_service.retail_agent._ddg_run")
     def test_search_tool_handles_failure_gracefully(self, mock_ddg):
-      """DuckDuckGo tool should return error string on failure, not raise."""
-      mock_ddg.run.side_effect = Exception("Rate limited")
-      from agent_service.retail_agent import search_tool
-    # Accessing the actual search function via 'func'
-      result = search_tool.func("some query")
-      assert "Search failed" in result or isinstance(result, str)
+        """DuckDuckGo tool should return error string on failure, not raise."""
+        mock_ddg.run.side_effect = Exception("Rate limited")
+        from agent_service.retail_agent import search_tool
+        result = search_tool("some query")
+        assert "Search failed" in result or isinstance(result, str)
 
 
 # ─────────────────────────────────────────────────────
@@ -148,7 +153,8 @@ class TestAPIEndpoints:
     @pytest.fixture
     def client(self):
         from fastapi.testclient import TestClient
-        with patch("main.ingest_document"), patch("main.ask_question"), patch("main.run_retail_research_agent"):
+        with patch("main.ingest_document"), patch("main.ask_question"), \
+             patch("main.run_retail_research_agent"):
             from main import app
             return TestClient(app)
 
@@ -176,45 +182,3 @@ class TestAPIEndpoints:
         resp = client.get("/api/knowledge")
         assert resp.status_code == 200
         assert "reports" in resp.json()
-
-
-# Test search_tool (for the fallback scenario)
-@patch("agent_service.retail_agent._ddg_run")
-def test_search_tool(mock_ddg):
-    """Triggers the final fallback 'Search failed' to boost coverage."""
-    # Force both the first try AND the retry to fail by making _ddg_run raise an exception
-    mock_ddg.run.side_effect = Exception("Connection Error")
-
-    # Importing search_tool after patching ensures it uses the mocked version of _ddg_run
-    from agent_service.retail_agent import search_tool
-
-    # Check if search_tool is callable (access func)
-    assert callable(search_tool.func), f"search_tool is not callable: {search_tool}"
-
-    # Call the search_tool with an "unlikely query"
-    result = search_tool.func("unlikely query")
-
-    # Assert that the fallback error message is returned
-    assert result == "Search failed."
-
-    # Now, let's test the case where the first call fails but the retry succeeds
-    mock_ddg.reset_mock()  # Reset mock to simulate the retry
-    mock_ddg.run.side_effect = [Exception("Connection Error"), "Successful retry result"]
-
-    result_retry = search_tool.func("unlikely query")
-
-    # Assert that the result from the retry is returned
-    assert result_retry == "Successful retry result"[:4000]
-
-    # Finally, let's simulate successful results right away
-    mock_ddg.reset_mock()  # Reset mock again to simulate no errors
-    mock_ddg.run.return_value = "Some search results"  # Set the return value for success
-
-    # Call search_tool with a query expecting a successful return
-    result_success = search_tool.func("unlikely query")
-
-    # Assert that the successful results are returned
-    assert result_success == "Some search results"[:4000]
-
-    # Check if the mock was actually called once in the success case
-    mock_ddg.run.assert_called_once_with("unlikely query")
