@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RetailMind — AI Retail Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  /* ── DESIGN TOKENS ── */
+  :root {
+    --bg0: #0d0e0f;
+    --bg1: #131518;
+    --bg2: #1a1d21;
+    --bg3: #21252b;
+    --bg4: #2a2f38;
+    --amber: #f59e0b;
+    --amber-dim: #b45309;
+    --amber-glow: rgba(245,158,11,0.12);
+    --amber-glow2: rgba(245,158,11,0.06);
+    --teal: #2dd4bf;
+    --teal-dim: #0d9488;
+    --teal-glow: rgba(45,212,191,0.10);
+    --red: #f87171;
+    --red-glow: rgba(248,113,113,0.10);
+    --green: #4ade80;
+    --green-glow: rgba(74,222,128,0.10);
+    --text0: #f0f2f5;
+    --text1: #b8bec8;
+    --text2: #6b7585;
+    --text3: #3d4452;
+    --border: rgba(255,255,255,0.06);
+    --border-bright: rgba(255,255,255,0.12);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+    --radius: 6px;
+    --radius-lg: 10px;
+    --transition: 180ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ── RESET & BASE ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 15px; scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg0);
+    color: var(--text0);
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* ── GRID NOISE TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(245,158,11,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,158,11,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── LAYOUT ── */
+  .shell { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px;
+    height: 56px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(13,14,15,0.9);
+    backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--text0);
+  }
+  .logo-mark {
+    width: 28px; height: 28px; border-radius: 5px;
+    background: var(--amber);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; color: #000;
+  }
+  .topbar-status {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 11px; color: var(--text2);
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text3); transition: background var(--transition);
+  }
+  .status-dot.online { background: var(--green); box-shadow: 0 0 6px rgba(74,222,128,0.5); }
+  .status-dot.loading { background: var(--amber); animation: pulse-dot 1s ease-in-out infinite; }
+
+
+  /* ── MAIN CONTENT ── */
+  .main { display: flex; flex: 1; min-height: 0; height: calc(100vh - 56px); overflow: hidden; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 260px; flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    background: var(--bg1);
+    padding: 20px 0;
+    display: flex; flex-direction: column; gap: 0;
+    overflow-y: auto;
+  }
+  .sidebar-section { padding: 0 16px 20px; }
+  .sidebar-label {
+    font-family: var(--mono); font-size: 10px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--text3); margin-bottom: 10px; padding: 0 4px;
+  }
+
+  /* Upload Zone */
+  .upload-zone {
+    border: 1px dashed var(--border-bright);
+    border-radius: var(--radius-lg);
+    padding: 20px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition);
+    background: var(--bg2);
+    position: relative;
+    overflow: hidden;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--amber-dim);
+    background: var(--amber-glow2);
+  }
+  .upload-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .upload-icon {
+    width: 32px; height: 32px; margin: 0 auto 8px;
+    border-radius: 8px; background: var(--bg4);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .upload-icon svg { width: 16px; height: 16px; stroke: var(--amber); fill: none; }
+  .upload-text { font-size: 12px; color: var(--text1); line-height: 1.5; }
+  .upload-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  /* Document list */
+  .doc-list { display: flex; flex-direction: column; gap: 4px; }
+  .doc-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; border-radius: var(--radius);
+    background: var(--bg2); border: 1px solid var(--border);
+    cursor: pointer; transition: all var(--transition);
+  }
+  .doc-item:hover { border-color: var(--border-bright); background: var(--bg3); }
+  .doc-item.active { border-color: var(--amber-dim); background: var(--amber-glow2); }
+  .doc-icon {
+    width: 22px; height: 22px; border-radius: 4px;
+    background: var(--bg4); display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .doc-icon svg { width: 11px; height: 11px; }
+  .doc-name { font-size: 11.5px; color: var(--text1); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .doc-badge {
+    font-family: var(--mono); font-size: 9px;
+    padding: 2px 5px; border-radius: 3px;
+    background: var(--green-glow); color: var(--green); flex-shrink: 0;
+  }
+  .doc-badge.loading { background: var(--amber-glow); color: var(--amber); }
+
+  /* Stats mini cards */
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .stat-mini {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 10px 10px 8px;
+  }
+  .stat-mini-val {
+    font-family: var(--mono); font-size: 18px; font-weight: 500; color: var(--text0);
+  }
+  .stat-mini-label { font-size: 10px; color: var(--text2); margin-top: 1px; }
+
+  /* ── WORKSPACE ── */
+  .workspace { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+  /* Tab bar */
+  .tab-bar {
+    display: flex; align-items: center; gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg1);
+    padding: 0 24px;
+  }
+  .tab {
+    display: flex; align-items: center; gap: 7px;
+    padding: 14px 18px 13px;
+    font-size: 13px; font-weight: 500; color: var(--text2);
+    border-bottom: 2px solid transparent;
+    cursor: pointer; transition: all var(--transition);
+    user-select: none;
+  }
+  .tab:hover { color: var(--text0); }
+  .tab.active { color: var(--amber); border-bottom-color: var(--amber); }
+  .tab svg { width: 14px; height: 14px; stroke: currentColor; fill: none; }
+  .tab-count {
+    font-family: var(--mono); font-size: 10px;
+    padding: 1px 6px; border-radius: 10px;
+    background: var(--bg3); color: var(--text2);
+  }
+  .tab.active .tab-count { background: var(--amber-glow); color: var(--amber); }
+
+  /* Panel */
+  .panel { display: none; flex: 1; flex-direction: column; }
+  .panel.active { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+
+  /* ── ASK PANEL ── */
+  .ask-panel { padding: 28px 32px; flex: 1; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+
+  .ask-header { display: flex; align-items: flex-start; justify-content: space-between; }
+  .ask-title { font-size: 20px; font-weight: 600; color: var(--text0); }
+  .ask-subtitle { font-size: 13px; color: var(--text2); margin-top: 3px; }
+  .model-badge {
+    font-family: var(--mono); font-size: 10px;
+    padding: 4px 10px; border-radius: var(--radius);
+    border: 1px solid var(--border-bright); color: var(--text2);
+    white-space: nowrap;
+  }
+  .model-badge span { color: var(--teal); }
+
+  /* Chat thread */
+  .chat-thread {
+    flex: 1;
+    display: flex; flex-direction: column; gap: 16px;
+    min-height: 200px;
+  }
+  .msg {
+    display: flex; gap: 12px;
+    animation: msg-in 0.25s cubic-bezier(0.4,0,0.2,1) both;
+  }
+  .msg-avatar {
+    width: 30px; height: 30px; border-radius: 7px;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+  }
+  .msg.user .msg-avatar { background: var(--bg4); color: var(--text1); }
+  .msg.bot .msg-avatar { background: var(--amber); color: #000; }
+  .msg-body { flex: 1; padding-top: 4px; }
+  .msg-role { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-bottom: 5px; letter-spacing: 0.05em; }
+  .msg.user .msg-role { color: var(--text2); }
+  .msg-text { font-size: 14px; line-height: 1.7; color: var(--text1); }
+  .msg.user .msg-text { color: var(--text0); }
+  .msg-sources {
+    margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px;
+  }
+  .source-chip {
+    font-family: var(--mono); font-size: 10px;
+    padding: 3px 8px; border-radius: 3px;
+    background: var(--teal-glow); color: var(--teal);
+    border: 1px solid rgba(45,212,191,0.2);
+  }
+  .msg-meta {
+    margin-top: 6px; font-family: var(--mono); font-size: 10px; color: var(--text3);
+  }
+
+  /* Typing indicator */
+  .typing { display: flex; align-items: center; gap: 4px; padding: 4px 0; }
+  .typing-dot {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--amber);
+    animation: typing-bounce 1.2s ease-in-out infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  /* Ask input */
+  .ask-input-row {
+    display: flex; gap: 10px; align-items: flex-end;
+    background: var(--bg2); border: 1px solid var(--border-bright);
+    border-radius: var(--radius-lg); padding: 12px 14px;
+    transition: border-color var(--transition);
+  }
+  .ask-input-row:focus-within { border-color: var(--amber-dim); }
+  .ask-input {
+    flex: 1; background: transparent; border: none; outline: none;
+    font-family: var(--sans); font-size: 14px; color: var(--text0);
+    resize: none; min-height: 22px; max-height: 120px; line-height: 1.6;
+  }
+  .ask-input::placeholder { color: var(--text3); }
+  .ask-send {
+    width: 34px; height: 34px; border-radius: 7px;
+    background: var(--amber); border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all var(--transition); flex-shrink: 0;
+  }
+  .ask-send:hover { background: #d97706; }
+  .ask-send:disabled { background: var(--bg4); cursor: not-allowed; }
+  .ask-send svg { width: 14px; height: 14px; stroke: #000; fill: none; stroke-width: 2.5; }
+  .ask-send:disabled svg { stroke: var(--text3); }
+
+  /* Empty state */
+  .empty-state {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 10px; color: var(--text2); text-align: center;
+  }
+  .empty-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--bg3); display: flex; align-items: center; justify-content: center;
+    margin-bottom: 4px;
+  }
+  .empty-icon svg { width: 22px; height: 22px; stroke: var(--text2); fill: none; }
+  .empty-title { font-size: 15px; font-weight: 500; color: var(--text1); }
+  .empty-sub { font-size: 13px; color: var(--text2); max-width: 300px; line-height: 1.6; }
+  .suggested-queries { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; width: 100%; max-width: 380px; }
+  .suggested-q {
+    padding: 9px 14px; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--bg2);
+    font-size: 13px; color: var(--text1); cursor: pointer;
+    text-align: left; transition: all var(--transition);
+  }
+  .suggested-q:hover { border-color: var(--amber-dim); color: var(--amber); background: var(--amber-glow2); }
+
+  /* ── RESEARCH PANEL ── */
+  .research-panel { padding: 28px 32px; flex: 1; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; }
+  .research-top { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
+  .research-form { display: flex; flex-direction: column; gap: 12px; }
+  .form-label { font-family: var(--mono); font-size: 10px; color: var(--text2); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .research-input {
+    width: 100%; background: var(--bg2); border: 1px solid var(--border-bright);
+    border-radius: var(--radius); padding: 12px 14px;
+    font-family: var(--sans); font-size: 14px; color: var(--text0);
+    outline: none; transition: border-color var(--transition);
+    resize: none;
+  }
+  .research-input::placeholder { color: var(--text3); }
+  .research-input:focus { border-color: var(--amber-dim); }
+
+  .agent-pipeline {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 16px;
+  }
+  .pipeline-title { font-family: var(--mono); font-size: 10px; color: var(--text2); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; }
+  .pipeline-steps { display: flex; flex-direction: column; gap: 0; }
+  .pipeline-step {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .pipeline-step:last-child { border-bottom: none; }
+  .step-indicator {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 1.5px solid var(--border-bright);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 10px; color: var(--text2);
+    flex-shrink: 0; transition: all 0.4s ease;
+  }
+  .step-indicator.active { border-color: var(--amber); color: var(--amber); box-shadow: 0 0 10px rgba(245,158,11,0.3); }
+  .step-indicator.done { border-color: var(--green); background: var(--green-glow); color: var(--green); }
+  .step-info { flex: 1; }
+  .step-name { font-size: 13px; font-weight: 500; color: var(--text1); }
+  .step-desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .step-model {
+    font-family: var(--mono); font-size: 10px;
+    padding: 2px 6px; border-radius: 3px;
+    background: var(--bg4); color: var(--text2); margin-top: 4px; display: inline-block;
+  }
+
+  .run-btn {
+    width: 100%; padding: 13px; border-radius: var(--radius);
+    background: var(--amber); border: none;
+    font-family: var(--sans); font-size: 14px; font-weight: 600; color: #000;
+    cursor: pointer; transition: all var(--transition);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .run-btn:hover { background: #d97706; }
+  .run-btn:disabled { background: var(--bg4); color: var(--text2); cursor: not-allowed; }
+  .run-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
+  .run-btn.running { background: var(--bg3); color: var(--amber); border: 1px solid var(--amber-dim); }
+
+  /* Report display */
+  .report-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+    animation: fade-up 0.35s ease both;
+  }
+  .report-header {
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg3);
+  }
+  .report-title { font-size: 13px; font-weight: 600; color: var(--text0); }
+  .report-meta { font-family: var(--mono); font-size: 10px; color: var(--text2); margin-top: 2px; }
+  .report-body { padding: 20px; font-size: 13.5px; line-height: 1.8; color: var(--text1); white-space: pre-wrap; word-break: break-word; max-height: 420px; overflow-y: auto; }
+  .report-actions { display: flex; gap: 8px; }
+  .action-btn {
+    padding: 5px 12px; border-radius: var(--radius);
+    border: 1px solid var(--border-bright); background: transparent;
+    font-size: 12px; color: var(--text1); cursor: pointer;
+    transition: all var(--transition);
+  }
+  .action-btn:hover { border-color: var(--amber-dim); color: var(--amber); }
+
+  /* ── KNOWLEDGE PANEL ── */
+  .knowledge-panel { padding: 28px 32px; flex: 1; overflow-y: auto; }
+  .knowledge-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .knowledge-grid { display: flex; flex-direction: column; gap: 8px; }
+  .report-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; border-radius: var(--radius-lg);
+    border: 1px solid var(--border); background: var(--bg2);
+    cursor: pointer; transition: all var(--transition);
+  }
+  .report-row:hover { border-color: var(--border-bright); background: var(--bg3); }
+  .report-row-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--teal-glow); border: 1px solid rgba(45,212,191,0.15);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .report-row-icon svg { width: 16px; height: 16px; stroke: var(--teal); fill: none; }
+  .report-row-info { flex: 1; overflow: hidden; }
+  .report-row-name { font-size: 13px; font-weight: 500; color: var(--text0); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .report-row-meta { font-family: var(--mono); font-size: 10px; color: var(--text2); margin-top: 3px; }
+  .report-row-size {
+    font-family: var(--mono); font-size: 11px; color: var(--text2); flex-shrink: 0;
+  }
+
+  /* Report modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    z-index: 200; align-items: center; justify-content: center; padding: 40px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--border-bright);
+    border-radius: var(--radius-lg); width: 100%; max-width: 720px;
+    max-height: 80vh; display: flex; flex-direction: column;
+    animation: fade-up 0.25s ease both;
+  }
+  .modal-head {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-title { font-size: 14px; font-weight: 600; color: var(--text0); }
+  .modal-close {
+    width: 28px; height: 28px; border-radius: 5px;
+    background: var(--bg4); border: none; cursor: pointer;
+    color: var(--text1); display: flex; align-items: center; justify-content: center;
+    transition: background var(--transition);
+  }
+  .modal-close:hover { background: var(--bg3); }
+  .modal-body { padding: 20px; overflow-y: auto; font-size: 13.5px; line-height: 1.8; color: var(--text1); white-space: pre-wrap; }
+
+  /* ── NOTIFICATIONS ── */
+  .notif-stack {
+    position: fixed; bottom: 24px; right: 24px;
+    display: flex; flex-direction: column; gap: 8px; z-index: 300;
+  }
+  .notif {
+    padding: 12px 16px; border-radius: var(--radius);
+    border: 1px solid var(--border-bright);
+    background: var(--bg3); min-width: 260px; max-width: 340px;
+    font-size: 13px; display: flex; align-items: flex-start; gap: 10px;
+    animation: notif-in 0.25s ease both;
+  }
+  .notif.success { border-color: rgba(74,222,128,0.3); }
+  .notif.error   { border-color: rgba(248,113,113,0.3); }
+  .notif.info    { border-color: rgba(245,158,11,0.3); }
+  .notif-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .notif.success .notif-dot { background: var(--green); }
+  .notif.error   .notif-dot { background: var(--red); }
+  .notif.info    .notif-dot { background: var(--amber); }
+  .notif-text { flex: 1; color: var(--text1); line-height: 1.5; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar-wrap { height: 2px; background: var(--bg3); border-radius: 1px; overflow: hidden; margin-top: 8px; }
+  .progress-bar-fill { height: 100%; background: var(--amber); border-radius: 1px; transition: width 0.4s ease; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  @keyframes typing-bounce {
+    0%,60%,100% { transform: translateY(0); }
+    30% { transform: translateY(-5px); }
+  }
+  @keyframes msg-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes notif-in {
+    from { opacity: 0; transform: translateX(16px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .spin { animation: spin 1s linear infinite; }
+
+  /* ── SCROLLBARS ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .research-top { grid-template-columns: 1fr; }
+    .ask-panel, .research-panel, .knowledge-panel { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-logo">
+      <div class="logo-mark">RM</div>
+      RetailMind
+    </div>
+    <div class="topbar-status">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">checking…</span>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <!-- Upload -->
+      <div class="sidebar-section">
+        <div class="sidebar-label">Documents</div>
+        <div class="upload-zone" id="upload-zone" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+          <input type="file" accept=".pdf" multiple onchange="handleFileSelect(event)" id="file-input"/>
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="upload-text">Drop PDF here</div>
+          <div class="upload-sub">or click to browse</div>
+        </div>
+      </div>
+
+      <!-- Doc list -->
+      <div class="sidebar-section" id="doc-section" style="display:none"><p id="doc-empty-msg" style="font-size:11px;color:var(--text3);padding:0 4px">No documents yet</p>
+        <div class="sidebar-label">Indexed</div>
+        <div class="doc-list" id="doc-list"></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="sidebar-section">
+        <div class="sidebar-label">Session</div>
+        <div class="stats-row">
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="stat-docs">0</div>
+            <div class="stat-mini-label">docs indexed</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="stat-questions">0</div>
+            <div class="stat-mini-label">questions</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="stat-reports">0</div>
+            <div class="stat-mini-label">reports</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-val" id="stat-chunks">—</div>
+            <div class="stat-mini-label">last chunks</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Models -->
+      <div class="sidebar-section">
+        <div class="sidebar-label">Models</div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="padding:8px 10px;border-radius:var(--radius);background:var(--bg2);border:1px solid var(--border)">
+            <div style="font-size:10px;color:var(--text2);font-family:var(--mono)">EMBEDDINGS</div>
+            <div style="font-size:11.5px;color:var(--teal);font-family:var(--mono);margin-top:2px">MiniLM-L6-v2</div>
+          </div>
+          <div style="padding:8px 10px;border-radius:var(--radius);background:var(--bg2);border:1px solid var(--border)">
+            <div style="font-size:10px;color:var(--text2);font-family:var(--mono)">Q&amp;A LLM</div>
+            <div style="font-size:11.5px;color:var(--amber);font-family:var(--mono);margin-top:2px">Gemini 2.5 Flash</div>
+          </div>
+          <div style="padding:8px 10px;border-radius:var(--radius);background:var(--bg2);border:1px solid var(--border)">
+            <div style="font-size:10px;color:var(--text2);font-family:var(--mono)">AGENT LLM</div>
+            <div style="font-size:11.5px;color:var(--amber);font-family:var(--mono);margin-top:2px">Groq 70B</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- WORKSPACE -->
+    <div class="workspace">
+
+      <!-- ── TAB BAR ── -->
+      <div class="tab-bar">
+        <div class="tab active" id="tab-ask" onclick="switchTab('ask')">
+          <svg viewBox="0 0 24 24" stroke-width="1.8"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          Document Q&amp;A
+        </div>
+        <div class="tab" id="tab-research" onclick="switchTab('research')">
+          <svg viewBox="0 0 24 24" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          Research Agent
+        </div>
+        <div class="tab" id="tab-knowledge" onclick="switchTab('knowledge')">
+          <svg viewBox="0 0 24 24" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+          Knowledge Repo
+          <span class="tab-count" id="knowledge-count">0</span>
+        </div>
+      </div>
+
+      <!-- ── ASK PANEL ── -->
+      <div class="panel active" id="panel-ask">
+        <div class="ask-panel">
+          <div class="ask-header">
+            <div>
+              <div class="ask-title">Document Q&A</div>
+              <div class="ask-subtitle">Ask questions grounded in your uploaded retail documents</div>
+            </div>
+            <div class="model-badge">RAG · <span>Gemini 2.5 Flash</span></div>
+          </div>
+
+          <!-- Chat thread -->
+          <div class="chat-thread" id="chat-thread">
+            <div class="empty-state" id="chat-empty">
+              <div class="empty-icon">
+                <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              </div>
+              <div class="empty-title">No conversation yet</div>
+              <div class="empty-sub">Upload a retail document and start asking questions. Answers are grounded strictly in your documents.</div>
+              <div class="suggested-queries">
+                <button class="suggested-q" onclick="fillQuestion(this)">What were the top retail trends this quarter?</button>
+                <button class="suggested-q" onclick="fillQuestion(this)">What does the report say about e-commerce growth?</button>
+                <button class="suggested-q" onclick="fillQuestion(this)">Summarise the key findings from the uploaded document</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input -->
+          <div class="ask-input-row">
+            <textarea class="ask-input" id="ask-input" placeholder="Ask a question about your documents…" rows="1" onkeydown="handleAskKey(event)" oninput="autoResize(this)"></textarea>
+            <button class="ask-send" id="ask-send" onclick="sendQuestion()">
+              <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RESEARCH PANEL ── -->
+      <div class="panel" id="panel-research">
+        <div class="research-panel">
+          <div>
+            <div class="ask-title">Autonomous Research Agent</div>
+            <div class="ask-subtitle" style="margin-top:3px">3-agent CrewAI pipeline · DuckDuckGo search · Groq LLaMA 3.3 70B</div>
+          </div>
+
+          <div class="research-top">
+            <div class="research-form">
+              <div>
+                <div class="form-label">Research query</div>
+                <textarea class="research-input" id="research-input" placeholder="e.g. Impact of AI personalisation on retail conversion rates 2024" rows="3"></textarea>
+              </div>
+              <button class="run-btn" id="run-btn" onclick="runResearch()">
+                <svg viewBox="0 0 24 24" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Run Research Agent
+              </button>
+              <div id="research-progress" style="display:none">
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+                </div>
+                <div style="font-family:var(--mono);font-size:10px;color:var(--amber);margin-top:6px" id="progress-label">Initialising crew…</div>
+              </div>
+            </div>
+
+            <div class="agent-pipeline">
+              <div class="pipeline-title">Agent Pipeline</div>
+              <div class="pipeline-steps">
+                <div class="pipeline-step">
+                  <div class="step-indicator" id="step-0">1</div>
+                  <div class="step-info">
+                    <div class="step-name">Researcher</div>
+                    <div class="step-desc">Searches DuckDuckGo for sources</div>
+                    <div class="step-model">groq/llama-3.3-70b</div>
+                  </div>
+                </div>
+                <div class="pipeline-step">
+                  <div class="step-indicator" id="step-1">2</div>
+                  <div class="step-info">
+                    <div class="step-name">Analyst</div>
+                    <div class="step-desc">Synthesises key findings</div>
+                    <div class="step-model">groq/llama-3.3-70b</div>
+                  </div>
+                </div>
+                <div class="pipeline-step">
+                  <div class="step-indicator" id="step-2">3</div>
+                  <div class="step-info">
+                    <div class="step-name">Writer</div>
+                    <div class="step-desc">Formats intelligence report</div>
+                    <div class="step-model">groq/llama-3.3-70b</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Report output -->
+          <div id="report-output"></div>
+        </div>
+      </div>
+
+      <!-- ── KNOWLEDGE PANEL ── -->
+      <div class="panel" id="panel-knowledge">
+        <div class="knowledge-panel">
+          <div class="knowledge-header">
+            <div>
+              <div class="ask-title">Knowledge Repository</div>
+              <div class="ask-subtitle" style="margin-top:3px">Auto-saved intelligence reports · ingested into RAG</div>
+            </div>
+            <button class="action-btn" onclick="loadKnowledge()">
+              ↻ Refresh
+            </button>
+          </div>
+          <div class="knowledge-grid" id="knowledge-grid">
+            <div class="empty-state" style="padding:60px 0">
+              <div class="empty-icon">
+                <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+              </div>
+              <div class="empty-title">No reports yet</div>
+              <div class="empty-sub">Run the research agent to automatically generate and save retail intelligence reports.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /workspace -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">Report</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div class="notif-stack" id="notif-stack"></div>
+
+<script>
+// If serving via FastAPI, leave this empty. 
+// If running Live Server (port 5500), use 'http://127.0.0.1:8000'
+const API = ''; 
+
+async function getQuery(userInput) {
+    console.log("Attempting to reach backend with:", userInput); // Debug line
+    
+    try {
+        const response = await fetch(`${API}/query`, { 
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: userInput })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log("Success:", data);
+        return data;
+    } catch (error) {
+        console.error("Connection Failed:", error);
+    }
+}
+
+// ── STATE ──
+const state = { docs: 0, questions: 0, reports: 0, chunks: '—' };
+let isAsking = false;
+let isResearching = false;
+
+function updateStats() {
+  document.getElementById('stat-docs').textContent      = state.docs;
+  document.getElementById('stat-questions').textContent = state.questions;
+  document.getElementById('stat-reports').textContent   = state.reports;
+  document.getElementById('stat-chunks').textContent    = state.chunks;
+}
+
+function switchTab(tab) {
+  ['ask','research','knowledge'].forEach(t => {
+    document.getElementById('panel-'+t).classList.toggle('active', t===tab);
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+  });
+  if (tab === 'knowledge') loadKnowledge();
+}
+
+// ── HEALTH CHECK ──
+async function checkHealth() {
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  try {
+    const res = await fetch(`${API}/api/health`);
+    if (res.ok) {
+      dot.className = 'status-dot online';
+      txt.textContent = 'API online';
+    } else {
+      dot.className = 'status-dot';
+      txt.textContent = 'API error';
+    }
+  } catch {
+    dot.className = 'status-dot';
+    txt.textContent = 'offline';
+  }
+}
+
+// ── UPLOAD ──
+function onDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
+function onDragLeave(e) { document.getElementById('upload-zone').classList.remove('drag-over'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  const files = [...e.dataTransfer.files].filter(f => f.name.endsWith('.pdf'));
+  files.forEach(uploadFile);
+}
+function handleFileSelect(e) {
+  [...e.target.files].forEach(uploadFile);
+  e.target.value = '';
+}
+
+async function uploadFile(file) {
+  const docId = 'doc' + Date.now();  // no underscore/dot — safe for getElementById
+  addDocItem(docId, file.name, 'loading');
+  notify('info', `Indexing "${file.name}"…`);
+
+  const form = new FormData();
+  form.append('file', file);
+
+  try {
+    const res = await fetch(`${API}/api/ingest`, { method: 'POST', body: form });
+    const data = await res.json();
+    if (res.ok) {
+      updateDocItem(docId, 'done');
+      state.docs++;
+      state.chunks = data.chunks;
+      updateStats();
+      notify('success', `"${file.name}" indexed — ${data.chunks} chunks`);
+    } else {
+      updateDocItem(docId, 'error');
+      notify('error', data.detail || 'Ingestion failed');
+    }
+  } catch (e) {
+    updateDocItem(docId, 'error');
+    notify('error', 'Could not reach API. Is the backend running?');
+  }
+}
+
+function addDocItem(id, name, status) {
+  // Show section, hide placeholder
+  const section = document.getElementById('doc-section');
+  section.style.removeProperty('display');
+  section.style.display = 'block';
+  const emptyMsg = document.getElementById('doc-empty-msg');
+  if (emptyMsg) emptyMsg.style.display = 'none';
+
+  const list = document.getElementById('doc-list');
+
+  // Icon div
+  const icon = document.createElement('div');
+  icon.className = 'doc-icon';
+  icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8" width="11" height="11"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+
+  // Name span
+  const nameEl = document.createElement('span');
+  nameEl.className = 'doc-name';
+  nameEl.title = name;
+  nameEl.textContent = name;
+
+  // Badge span — keyed by data-badge for updateDocItem
+  const badge = document.createElement('span');
+  badge.className = 'doc-badge loading';
+  badge.dataset.badge = id;
+  badge.textContent = 'indexing…';
+
+  // Row
+  const el = document.createElement('div');
+  el.className = 'doc-item';
+  el.dataset.docid = id;
+  el.appendChild(icon);
+  el.appendChild(nameEl);
+  el.appendChild(badge);
+
+  list.appendChild(el);
+}
+
+function updateDocItem(id, status) {
+  const badge = document.querySelector('[data-badge="' + id + '"]');
+  if (!badge) { console.warn('badge not found for', id); return; }
+  if (status === 'done') {
+    badge.className = 'doc-badge';
+    badge.style.cssText = '';
+    badge.textContent = 'indexed';
+  } else if (status === 'error') {
+    badge.className = 'doc-badge';
+    badge.style.background = 'var(--red-glow)';
+    badge.style.color = 'var(--red)';
+    badge.textContent = 'error';
+  }
+}
+
+// ── ASK ──
+function fillQuestion(btn) {
+  document.getElementById('ask-input').value = btn.textContent;
+  autoResize(document.getElementById('ask-input'));
+}
+
+function handleAskKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuestion(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+async function sendQuestion() {
+  const input = document.getElementById('ask-input');
+  const q = input.value.trim();
+  if (!q || isAsking) return;
+
+  isAsking = true;
+  input.value = '';
+  autoResize(input);
+  document.getElementById('ask-send').disabled = true;
+
+  // Hide empty state
+  const empty = document.getElementById('chat-empty');
+  if (empty) empty.remove();
+
+  const thread = document.getElementById('chat-thread');
+
+  // Add user message
+  appendMsg(thread, 'user', q, null, null);
+
+  // Add typing indicator
+  const typingId = 'typing_' + Date.now();
+  const typingEl = document.createElement('div');
+  typingEl.id = typingId;
+  typingEl.className = 'msg bot';
+  typingEl.innerHTML = `
+    <div class="msg-avatar">RM</div>
+    <div class="msg-body">
+      <div class="msg-role">RETAILMIND · gemini-2.5-flash</div>
+      <div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
+    </div>`;
+  thread.appendChild(typingEl);
+  thread.scrollTop = thread.scrollHeight;
+
+  try {
+    const res = await fetch(`${API}/api/ask`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q, top_k: 5 })
+    });
+    const data = await res.json();
+
+    typingEl.remove();
+
+    if (res.ok) {
+      appendMsg(thread, 'bot', data.answer, data.sources, data.chunks_used);
+      state.questions++;
+      state.chunks = data.chunks_used;
+      updateStats();
+    } else {
+      appendMsg(thread, 'bot', `Error: ${data.detail || 'Unknown error'}`, null, null, true);
+    }
+  } catch (err) {
+    typingEl.remove();
+    appendMsg(thread, 'bot', 'Could not reach the API. Make sure the backend is running on port 8000.', null, null, true);
+  }
+
+  isAsking = false;
+  document.getElementById('ask-send').disabled = false;
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function appendMsg(thread, role, text, sources, chunks, isError=false) {
+  const el = document.createElement('div');
+  el.className = `msg ${role}`;
+  const sourcesHtml = sources && sources.length
+    ? `<div class="msg-sources">${sources.map(s => `<span class="source-chip">${s}</span>`).join('')}</div>`
+    : '';
+  const metaHtml = chunks != null
+    ? `<div class="msg-meta">${chunks} chunks retrieved</div>`
+    : '';
+  el.innerHTML = `
+    <div class="msg-avatar">${role==='user' ? 'YOU' : 'RM'}</div>
+    <div class="msg-body">
+      <div class="msg-role">${role==='user' ? 'YOU' : 'RETAILMIND · gemini-2.5-flash'}</div>
+      <div class="msg-text" style="${isError ? 'color:var(--red)' : ''}">${escHtml(text)}</div>
+      ${sourcesHtml}${metaHtml}
+    </div>`;
+  thread.appendChild(el);
+}
+
+// ── RESEARCH ──
+async function runResearch() {
+  const input = document.getElementById('research-input');
+  const query = input.value.trim();
+  if (!query || isResearching) return;
+
+  isResearching = true;
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.classList.add('running');
+  btn.innerHTML = `<svg class="spin" viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Running crew…`;
+
+  // Show progress
+  document.getElementById('research-progress').style.display = 'block';
+  const fill = document.getElementById('progress-fill');
+  const label = document.getElementById('progress-label');
+
+  // Reset steps
+  [0,1,2].forEach(i => {
+    const s = document.getElementById('step-'+i);
+    s.className = 'step-indicator';
+    s.textContent = i+1;
+  });
+
+  // Animate pipeline steps
+  const stages = [
+    { pct: 15, text: 'Researcher searching DuckDuckGo…', step: 0 },
+    { pct: 50, text: 'Analyst synthesising findings…',    step: 1 },
+    { pct: 80, text: 'Writer drafting report…',           step: 2 },
+    { pct: 95, text: 'Saving to knowledge repository…',   step: null },
+  ];
+
+  let stageIdx = 0;
+  const stageTimer = setInterval(() => {
+    if (stageIdx < stages.length) {
+      const s = stages[stageIdx];
+      fill.style.width = s.pct + '%';
+      label.textContent = s.text;
+      if (s.step !== null) {
+        if (s.step > 0) {
+          document.getElementById('step-'+(s.step-1)).className = 'step-indicator done';
+          document.getElementById('step-'+(s.step-1)).textContent = '✓';
+        }
+        document.getElementById('step-'+s.step).className = 'step-indicator active';
+      }
+      stageIdx++;
+    } else clearInterval(stageTimer);
+  }, 3200);
+
+  try {
+    const res = await fetch(`${API}/api/research`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+    const data = await res.json();
+    clearInterval(stageTimer);
+
+    if (res.ok) {
+      fill.style.width = '100%';
+      label.textContent = 'Complete.';
+      [0,1,2].forEach(i => {
+        const s = document.getElementById('step-'+i);
+        s.className = 'step-indicator done';
+        s.textContent = '✓';
+      });
+
+      // Show report
+      showReport(data);
+      state.reports++;
+      updateStats();
+      notify('success', 'Research complete — report saved to knowledge repo');
+    } else {
+      fill.style.width = '0%';
+      label.textContent = 'Failed.';
+      notify('error', data.detail || 'Research agent failed');
+    }
+  } catch (err) {
+    clearInterval(stageTimer);
+    fill.style.width = '0%';
+    label.textContent = 'Could not reach API.';
+    notify('error', 'Could not reach the API. Is the backend running?');
+  }
+
+  isResearching = false;
+  btn.disabled = false;
+  btn.classList.remove('running');
+  btn.innerHTML = `<svg viewBox="0 0 24 24" stroke-width="2" fill="none" stroke="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run Research Agent`;
+  setTimeout(() => { document.getElementById('research-progress').style.display = 'none'; }, 2000);
+}
+
+function showReport(data) {
+  const out = document.getElementById('report-output');
+  const ts = data.timestamp ? new Date(data.timestamp).toLocaleString() : '—';
+  out.innerHTML = `
+    <div class="report-card">
+      <div class="report-header">
+        <div>
+          <div class="report-title">${escHtml(data.query)}</div>
+          <div class="report-meta">${ts} · ${data.model} · ${data.filepath ? data.filepath.split('/').pop() : ''}</div>
+        </div>
+        <div class="report-actions">
+          <button class="action-btn" onclick="copyReport()">Copy</button>
+          <button class="action-btn" onclick="downloadReport('${escHtml(data.query)}', \`${escHtml(data.report)}\`)">Download</button>
+        </div>
+      </div>
+      <div class="report-body" id="current-report">${escHtml(data.report)}</div>
+    </div>`;
+}
+
+function copyReport() {
+  const txt = document.getElementById('current-report');
+  if (txt) { navigator.clipboard.writeText(txt.textContent); notify('success', 'Report copied to clipboard'); }
+}
+
+function downloadReport(query, content) {
+  const blob = new Blob([content], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = query.replace(/[^a-z0-9]/gi,'_').toLowerCase().slice(0,40) + '.txt';
+  a.click();
+}
+
+// ── KNOWLEDGE ──
+async function loadKnowledge() {
+  const grid = document.getElementById('knowledge-grid');
+  grid.innerHTML = '<div style="padding:20px;color:var(--text2);font-size:13px;font-family:var(--mono)">Loading…</div>';
+
+  try {
+    const res = await fetch(`${API}/api/knowledge`);
+    const data = await res.json();
+
+    document.getElementById('knowledge-count').textContent = data.count || 0;
+
+    if (!data.reports || data.reports.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state" style="padding:60px 0">
+          <div class="empty-icon"><svg viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="currentColor"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>
+          <div class="empty-title">No reports yet</div>
+          <div class="empty-sub">Run the research agent to generate reports.</div>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = data.reports.map(r => {
+      const date = new Date(r.modified * 1000).toLocaleDateString();
+      const name = r.filename.replace(/^\d{8}_\d{6}_/, '').replace(/_/g,' ').replace('.txt','');
+      return `
+        <div class="report-row" onclick="openKnowledgeReport('${escHtml(r.filename)}')">
+          <div class="report-row-icon">
+            <svg viewBox="0 0 24 24" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div class="report-row-info">
+            <div class="report-row-name">${escHtml(name)}</div>
+            <div class="report-row-meta">${r.filename} · ${date}</div>
+          </div>
+          <div class="report-row-size">${r.size_kb} KB</div>
+        </div>`;
+    }).join('');
+  } catch {
+    grid.innerHTML = '<div style="padding:20px;color:var(--red);font-size:13px">Could not load reports — check API connection.</div>';
+  }
+}
+
+async function openKnowledgeReport(filename) {
+  try {
+    const res = await fetch(`${API}/api/knowledge/${encodeURIComponent(filename)}`);
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById('modal-title').textContent = filename.replace(/^\d{8}_\d{6}_/,'').replace(/_/g,' ').replace('.txt','');
+      document.getElementById('modal-body').textContent = data.content;
+      document.getElementById('modal-overlay').classList.add('open');
+    }
+  } catch { notify('error', 'Could not load report'); }
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeModalOnOverlay(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+
+// ── NOTIFICATIONS ──
+let notifId = 0;
+function notify(type, msg) {
+  const stack = document.getElementById('notif-stack');
+  const id = 'notif_' + (notifId++);
+  const el = document.createElement('div');
+  el.className = `notif ${type}`;
+  el.id = id;
+  el.innerHTML = `<div class="notif-dot"></div><div class="notif-text">${escHtml(msg)}</div>`;
+  stack.appendChild(el);
+  setTimeout(() => { const n = document.getElementById(id); if(n) n.style.opacity='0'; n.style.transform='translateX(16px)'; n.style.transition='all 0.3s'; setTimeout(()=> n?.remove(), 300); }, 3500);
+}
+
+// ── UTILS ──
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── INIT ──
+checkHealth();
+setInterval(checkHealth, 15000);
+</script>
+</body>
+</html>
