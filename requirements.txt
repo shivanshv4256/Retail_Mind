@@ -1,29 +1,33 @@
 # --- CORE API & SERVER ---
-fastapi==0.111.0
-uvicorn[standard]==0.29.0
-python-multipart==0.0.9
+fastapi==0.136.0
+uvicorn[standard]==0.45.0
+python-multipart==0.0.26
 python-dotenv==1.0.1
-pydantic==2.7.4
+pydantic==2.12.5
 
 # --- AGENT ORCHESTRATION (CrewAI) ---
-crewai==0.51.0
-langchain-groq==0.1.6
-langchain==0.2.12
-langchain-community==0.2.11
+crewai==1.14.2
+langchain-groq==1.1.2
+langchain==1.2.15
+langchain-community==0.4.1
 duckduckgo-search==6.2.6
 
 # --- RAG & DOCUMENT PROCESSING ---
 pypdf==6.10.2
-langchain-text-splitters
-chromadb==0.5.3
+langchain-text-splitters==1.1.2
+chromadb==1.1.1
 
 # --- LOCAL EMBEDDINGS (CPU Optimized) ---
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.4.0
-sentence-transformers==3.0.1
+sentence-transformers==5.4.1
 
 # --- GOOGLE AI (Gemini) ---
-google-generativeai==0.7.2
+google-generativeai==0.8.6
 
 # --- GROQ & AGENTS ---
-groq==0.9.0
+groq==0.37.1
+
+litellm==1.83.12
+
+httpx==0.28.1
