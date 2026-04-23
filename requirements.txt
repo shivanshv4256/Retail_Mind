@@ -26,4 +26,3 @@ google-generativeai==0.7.2
 
 # --- GROQ & AGENTS ---
 groq==1.1.2
-langchain-groq==1.1.2
