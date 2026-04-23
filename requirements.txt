@@ -6,7 +6,7 @@ python-dotenv==1.0.1
 pydantic==2.7.4
 
 # --- AGENT ORCHESTRATION (CrewAI) ---
-crewai==1.14.1
+crewai==0.51.0
 langchain-groq==0.1.6
 langchain-community==0.4.1
 duckduckgo-search==6.2.6
@@ -14,7 +14,7 @@ duckduckgo-search==6.2.6
 # --- RAG & DOCUMENT PROCESSING ---
 pypdf==6.10.2
 langchain-text-splitters==1.1.2
-chromadb==1.5.8
+chromadb==0.5.3
 
 # --- LOCAL EMBEDDINGS (CPU Optimized) ---
 --extra-index-url https://download.pytorch.org/whl/cpu
