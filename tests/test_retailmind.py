@@ -215,9 +215,13 @@ def test_search_tool(mock_ddg):
 
     # Finally, let's simulate successful results right away
     mock_ddg.reset_mock()  # Reset mock again to simulate no errors
-    mock_ddg.run.return_value = "Some search results"
+    mock_ddg.run.return_value = "Some search results"  # Set the return value for success
 
+    # Call search_tool with a query expecting a successful return
     result_success = search_tool("unlikely query")
 
     # Assert that the successful results are returned
     assert result_success == "Some search results"[:4000]
+
+    # Check if the mock was actually called once in the success case
+    mock_ddg.run.assert_called_once_with("unlikely query")
