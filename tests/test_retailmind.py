@@ -130,7 +130,7 @@ class TestAgentKnowledgeRepo:
         """DuckDuckGo tool should append 'retail industry' if not present."""
         mock_ddg.run.return_value = "Sample search results about e-commerce trends."
         from agent_service.retail_agent import search_tool
-        result = search_tool("e-commerce trends 2024")
+        result = search_tool.func("e-commerce trends 2024")
         # Should have called with retail context appended
         call_arg = mock_ddg.run.call_args[0][0]
         assert "retail" in call_arg.lower()
@@ -141,7 +141,7 @@ class TestAgentKnowledgeRepo:
         """DuckDuckGo tool should return error string on failure, not raise."""
         mock_ddg.run.side_effect = Exception("Rate limited")
         from agent_service.retail_agent import search_tool
-        result = search_tool("some query")
+        result = search_tool.func("some query")
         assert "Search failed" in result or isinstance(result, str)
 
 
