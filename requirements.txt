@@ -1,39 +1,29 @@
-# ─────────────────────────────────────────
-# RetailMind — Python dependencies
-# ─────────────────────────────────────────
-
-# API framework
+# --- CORE API & SERVER ---
 fastapi==0.111.0
 uvicorn[standard]==0.29.0
-python-multipart==0.0.9       # file upload support
+python-multipart==0.0.9
+python-dotenv==1.0.1
+pydantic==2.7.4
 
-# Gemini (Q&A generation only — embeddings handled locally)
-google-generativeai==0.7.2
-
-# HuggingFace embeddings — sentence-transformers/all-MiniLM-L6-v2 (local, free)
-sentence-transformers==3.0.1
-torch   -           # CPU-only build is fine; install with: pip install torch --index-url https://download.pytorch.org/whl/cpu
-
-# Groq (LLaMA 3.3 70B — agent LLM)
-groq==0.9.0
-langchain-groq
-
-# CrewAI (multi-agent orchestration)
-crewai
-
-# LangChain (text splitting, DuckDuckGo tool, tooling)
-langchain==0.2.12
-langchain-community==0.2.11
-
-# Vector store
-chromadb==0.5.3
-
-# PDF parsing
-pypdf==4.2.0
-
-# Web search tool (free, no API key required)
+# --- AGENT ORCHESTRATION (CrewAI) ---
+crewai==1.14.1
+langchain-groq==0.1.6
+langchain-community==0.4.1
 duckduckgo-search==6.2.6
 
-# Utilities
-pydantic==2.7.4
-python-dotenv==1.0.1
+# --- RAG & DOCUMENT PROCESSING ---
+pypdf==6.10.2
+langchain-text-splitters==1.1.2
+chromadb==1.5.8
+
+# --- LOCAL EMBEDDINGS (CPU Optimized) ---
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.4.0
+sentence-transformers==3.0.1
+
+# --- GOOGLE AI (Gemini) ---
+google-generativeai==0.7.2
+
+# --- GROQ & AGENTS ---
+groq==1.1.2
+langchain-groq==1.1.2
