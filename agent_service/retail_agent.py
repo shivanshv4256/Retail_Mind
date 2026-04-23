@@ -16,7 +16,6 @@ from datetime import datetime
 from pathlib import Path
 
 from crewai import Agent, Task, Crew, Process, LLM
-from crewai.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
 
@@ -60,7 +59,7 @@ _ddg_wrapper = DuckDuckGoSearchAPIWrapper(
 _ddg_run = DuckDuckGoSearchRun(api_wrapper=_ddg_wrapper)
 
 
-@tool("DuckDuckGo Retail Search")
+
 def search_tool(query: str) -> str:
     """
     Search the web using DuckDuckGo for retail market intelligence.

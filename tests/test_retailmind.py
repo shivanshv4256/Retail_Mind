@@ -192,8 +192,11 @@ def test_search_tool(mock_ddg):
     # Force both the first try AND the retry to fail by making _ddg_run raise an exception
     mock_ddg.run.side_effect = Exception("Connection Error")
 
-    # Import search_tool after patching
+    # Importing search_tool after patching ensures it uses the mocked version of _ddg_run
     from agent_service.retail_agent import search_tool
+
+    # Check if search_tool is callable
+    assert callable(search_tool), f"search_tool is not callable: {search_tool}"
 
     # Call the search_tool with an "unlikely query"
     result = search_tool("unlikely query")
