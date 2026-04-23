@@ -49,11 +49,11 @@ jobs:
 
       - name: Run unit tests with coverage
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GROQ_API_KEY:   ${{ secrets.GROQ_API_KEY }}
           
         run: |
-          pythom -m pytest tests/ -v \
+          python -m pytest tests/ -v \
             --cov=rag_service \
             --cov=agent_service \
             --cov-report=xml \
