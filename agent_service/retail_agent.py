@@ -19,7 +19,6 @@ from crewai import Agent, Task, Crew, Process, LLM
 from crewai.tools import tool
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_community.utilities import DuckDuckGoSearchAPIWrapper
-from langchain_groq import ChatGroq
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("retailmind.agent")
@@ -86,7 +85,7 @@ def search_tool(query: str) -> str:
         logger.warning(f"DuckDuckGo search error: {e}. Retrying without modifier...")
         try:
             return _ddg_run.run(query)
-        except Exception as e2:
+        except Exception :
             return results[:4000] if results else "Search failed."
 
 
@@ -167,8 +166,8 @@ def build_analysis_task(agent: Agent, research_task: Task) -> Task:
     )
 
 
-def build_writing_task(agent: Agent, analysis_task: Task, query: str) -> Task:
-    timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+def build_writing_task(agent: Agent, analysis_task: Task, ) -> Task:
+    
     return Task(
         description=(
            """ Generate final report including:
