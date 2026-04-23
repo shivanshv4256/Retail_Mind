@@ -28,6 +28,6 @@ google-generativeai==0.8.6
 # --- GROQ & AGENTS ---
 groq==0.37.1
 
-litellm==1.83.12
+
 
 httpx==0.28.1
