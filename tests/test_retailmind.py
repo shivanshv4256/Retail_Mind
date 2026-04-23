@@ -188,9 +188,10 @@ class TestAPIEndpoints:
 def test_search_tool(self, mock_ddg):
     """Triggers the final fallback 'Search failed' to boost coverage."""
     # Force both the first try AND the retry to fail
-    mock_ddg.run.side_effect = Exception("Permanent Failure")
+    mock_ddg.run.side_effect = Exception("Connection Error")
 
     from agent_service.retail_agent import search_tool
     result = search_tool("unlikely query")
 
     assert result == "Search failed."
+    assert mock_ddg.run.called
