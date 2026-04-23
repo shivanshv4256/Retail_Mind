@@ -87,7 +87,7 @@ def search_tool(query: str) -> str:
             retry_results = _ddg_run.run(query)
             return retry_results[:4000] if retry_results else "No results found."
         except Exception :
-            return  "Search failed." 
+            return  "Search failed."
 
 
 # ──────────────────────────────────────────────
