@@ -103,7 +103,7 @@ class TestAgentKnowledgeRepo:
         content = "Test retail intelligence report content."
         query   = "test retail trends"
 
-        filepath = save_to_knowledge_repo(content, query)
+        filepath = save_to_knowledge_repo(content, query, model_used="test_model")
 
         assert filepath.exists()
         text = filepath.read_text(encoding="utf-8")
@@ -120,7 +120,7 @@ class TestAgentKnowledgeRepo:
 
     def test_save_sanitises_query_in_filename(self):
         from agent_service.retail_agent import save_to_knowledge_repo
-        filepath = save_to_knowledge_repo("content", "Query with SPACES & symbols!")
+        filepath = save_to_knowledge_repo("content", "Query with SPACES & symbols!",model_used="test_model")
         assert " " not in filepath.name
         assert "&" not in filepath.name
         filepath.unlink()
