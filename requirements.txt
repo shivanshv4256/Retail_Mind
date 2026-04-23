@@ -3,7 +3,7 @@ fastapi==0.136.0
 uvicorn[standard]==0.45.0
 python-multipart==0.0.26
 python-dotenv==1.0.1
-pydantic==2.12.5
+pydantic==2.11.9
 
 # --- AGENT ORCHESTRATION (CrewAI) ---
 crewai==1.14.2
