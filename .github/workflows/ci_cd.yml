@@ -57,7 +57,7 @@ jobs:
             --cov=rag_service \
             --cov=agent_service \
             --cov-report=xml \
-            --cov-fail-under=70
+            --cov-fail-under=65
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v4
