@@ -122,19 +122,22 @@ class TestAgentKnowledgeRepo:
         """DuckDuckGo tool should append 'retail industry' if not present."""
         mock_ddg.run.return_value = "Sample search results about e-commerce trends."
         from agent_service.retail_agent import search_tool
-        result = search_tool("e-commerce trends 2024")
-        # Should have called with retail context appended
+    # Accessing the actual search function via 'func'
+        result = search_tool.func("e-commerce trends 2024")
+
+    # Should have called with retail context appended
         call_arg = mock_ddg.run.call_args[0][0]
         assert "retail" in call_arg.lower()
         assert len(result) > 0
 
     @patch("agent_service.retail_agent._ddg_run")
     def test_search_tool_handles_failure_gracefully(self, mock_ddg):
-        """DuckDuckGo tool should return error string on failure, not raise."""
-        mock_ddg.run.side_effect = Exception("Rate limited")
-        from agent_service.retail_agent import search_tool
-        result = search_tool("some query")
-        assert "Search failed" in result or isinstance(result, str)
+      """DuckDuckGo tool should return error string on failure, not raise."""
+      mock_ddg.run.side_effect = Exception("Rate limited")
+      from agent_service.retail_agent import search_tool
+    # Accessing the actual search function via 'func'
+      result = search_tool.func("some query")
+      assert "Search failed" in result or isinstance(result, str)
 
 
 # ─────────────────────────────────────────────────────
@@ -185,14 +188,33 @@ def test_search_tool(mock_ddg):
     # Importing search_tool after patching ensures it uses the mocked version of _ddg_run
     from agent_service.retail_agent import search_tool
 
-    # Check if search_tool is callable
-    assert callable(search_tool), f"search_tool is not callable: {search_tool}"
+    # Check if search_tool is callable (access func)
+    assert callable(search_tool.func), f"search_tool is not callable: {search_tool}"
 
     # Call the search_tool with an "unlikely query"
-    result = search_tool("unlikely query")
+    result = search_tool.func("unlikely query")
 
     # Assert that the fallback error message is returned
     assert result == "Search failed."
 
     # Now, let's test the case where the first call fails but the retry succeeds
     mock_ddg.reset_mock()  # Reset mock to simulate the retry
+    mock_ddg.run.side_effect = [Exception("Connection Error"), "Successful retry result"]
+
+    result_retry = search_tool.func("unlikely query")
+
+    # Assert that the result from the retry is returned
+    assert result_retry == "Successful retry result"[:4000]
+
+    # Finally, let's simulate successful results right away
+    mock_ddg.reset_mock()  # Reset mock again to simulate no errors
+    mock_ddg.run.return_value = "Some search results"  # Set the return value for success
+
+    # Call search_tool with a query expecting a successful return
+    result_success = search_tool.func("unlikely query")
+
+    # Assert that the successful results are returned
+    assert result_success == "Some search results"[:4000]
+
+    # Check if the mock was actually called once in the success case
+    mock_ddg.run.assert_called_once_with("unlikely query")
