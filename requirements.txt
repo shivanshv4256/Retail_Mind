@@ -30,5 +30,13 @@ groq==0.37.1
 
 
 
+<<<<<<< HEAD
 httpx==0.28.1
 litellm
+=======
+
+
+
+litellm
+httpx==0.28.1
+>>>>>>> 31c561a3c83024bbc695d8cc48e4c4e6aab0daed
