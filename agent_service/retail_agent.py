@@ -245,7 +245,7 @@ def run_retail_research_agent(query: str) -> dict:
     # Build tasks (chained: research → analysis → writing)
     research_task  = build_research_task(researcher, query)
     analysis_task  = build_analysis_task(analyst, research_task)
-    writing_task   = build_writing_task(writer, analysis_task, query)
+    writing_task   = build_writing_task(writer, analysis_task)
 
     # Assemble crew
     crew = Crew(
