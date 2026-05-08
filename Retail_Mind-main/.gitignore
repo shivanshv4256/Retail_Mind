@@ -1,0 +1,7 @@
+pycache/
+venv/
+.env
+chroma_db/
+knowledge_repo/
+uploads/
+__pycache__

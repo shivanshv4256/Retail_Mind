@@ -1,0 +1,41 @@
+# --- CORE API & SERVER ---
+fastapi==0.136.0
+uvicorn[standard]==0.45.0
+python-multipart==0.0.26
+python-dotenv==1.1.1
+pydantic==2.11.9
+
+# --- AGENT ORCHESTRATION (CrewAI) ---
+crewai==1.14.2
+langchain-groq==1.1.2
+langchain==1.2.15
+langchain-community==0.4.1
+ddgs
+
+# --- RAG & DOCUMENT PROCESSING ---
+pypdf==6.10.2
+langchain-text-splitters==1.1.2
+chromadb==1.1.1
+
+# --- LOCAL EMBEDDINGS (CPU Optimized) ---
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.4.0
+sentence-transformers==5.4.1
+
+# --- GOOGLE AI (Gemini) ---
+google-generativeai==0.8.6
+
+# --- GROQ & AGENTS ---
+groq==0.37.1
+
+
+
+
+httpx==0.28.1
+litellm
+
+
+
+
+litellm
+httpx==0.28.1
